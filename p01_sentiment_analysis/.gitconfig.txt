@@ -1,0 +1,3 @@
+[user]
+	name = rtreddick
+	email = r.t.reddick@gmail.com
