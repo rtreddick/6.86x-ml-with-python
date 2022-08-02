@@ -51,25 +51,29 @@ class NeuralNetwork():
 
     def train(self, x1, x2, y):
 
+
+        vec_relu = np.vectorize(rectified_linear_unit)
+        vec_relu_derivative = np.vectorize(rectified_linear_unit_derivative)
+
         ### Forward propagation ###
         input_values = np.matrix([[x1],[x2]]) # 2 by 1
 
         # Calculate the input and activation of the hidden layer
-        hidden_layer_weighted_input = np.matmul(self.input_to_hidden_weights, input_values) # (3 by 1 matrix)
-        hidden_layer_activation = np.vectorize(rectified_linear_unit)(hidden_layer_weighted_input) # (3 by 1 matrix)
+        hidden_layer_weighted_input = np.matmul(self.input_to_hidden_weights, input_values) + self.biases # (3 by 1 matrix)
+        hidden_layer_activation = vec_relu(hidden_layer_weighted_input) # (3 by 1 matrix)
         output = np.matmul(self.hidden_to_output_weights, hidden_layer_activation)
-        activated_output = np.vectorize(output_layer_activation)(output)
+        activated_output = output_layer_activation(output)
 
         ### Backpropagation ###
 
         # Compute gradients
-        output_layer_error = activated_output - y
+        output_layer_error = (activated_output - y) * output_layer_activation_derivative(output)
         hidden_layer_error = (
             np.multiply(
-                np.vectorize(rectified_linear_unit_derivative)(hidden_layer_activation),
+                vec_relu_derivative(hidden_layer_weighted_input),
                 self.hidden_to_output_weights.transpose()
             )
-            * activated_output
+            * output_layer_error
         )   
             
         bias_gradients = hidden_layer_error
